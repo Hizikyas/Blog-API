@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>External Blog Poster</title>
+  </head>
+  <body>
+    <h1>External Site: Post to Blog</h1>
+    <button onclick="postToBlog()">Post Blog to Next.js Blog</button>
+
+    <script>
+      async function postToBlog() {
+        try {
+          console.log("this is something that should work ");
+          const res = await fetch("http://localhost:3000/api/external-post", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: "Post from External another Site",
+              blog: "Hello! This was posted from another localhost site.",
+              catagory: "TECHNOLOGY",
+              image: "",
+              nickname: "someone",
+            }),
+          });
+
+          const data = await res.json(); // ✅ Read JSON only once
+
+          if (!res.ok) {
+            alert(
+              "Failed to send blog post: " + (data.error || "Unknown error")
+            );
+            return;
+          }
+
+          console.log("Server Response:", data);
+          alert("Blog post sent successfully!");
+        } catch (err) {
+          console.error("Error sending blog post:", err);
+          alert("Failed to send blog post: right " + err.message);
+        }
+      }
+    </script>
+  </body>
+</html>
