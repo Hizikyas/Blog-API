@@ -1,1 +1,23 @@
+# Node modules
 node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env*
+!.env.example
+
+# Mac and Windows OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/

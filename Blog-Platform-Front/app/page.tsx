@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,84 +11,94 @@ import CreateBlogModal from "@/components/CreateBlogModal";
 import CommentModal from "@/components/CommentModal";
 import FilterDropdown from "@/components/FilterDropdown";
 
-const mockBlogs = [
-  {
-    id: 1,
-    title: "Getting Started with React and TypeScript",
-    category: "TECHNOLOGY",
-    date: new Date(Date.now() - 2 * 60 * 1000),
-    blog: "A comprehensive guide to building modern web applications with React and TypeScript...",
-    image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop"
-  },
-  {
-    id: 2,
-    title: "10 Must-Try Recipes for Food Lovers",
-    category: "FOOD",
-    date: new Date(Date.now() - 25 * 60 * 1000),
-    blog: "Discover amazing recipes that will transform your cooking experience...",
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=250&fit=crop"
-  },
-  {
-    id: 3,
-    title: "Hidden Gems of Southeast Asia",
-    category: "TRAVEL",
-    date: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    blog: "Explore breathtaking destinations off the beaten path in Southeast Asia...",
-    image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400&h=250&fit=crop"
-  },
-  {
-    id: 4,
-    title: "The Future of Online Education",
-    category: "EDUCATION",
-    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    blog: "How technology is revolutionizing the way we learn and teach...",
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=250&fit=crop"
-  }
-];
+interface Blog {
+  id: number;
+  title: string;
+  blog: string;
+  catagory: string;
+  date: string;
+  image: string | null;
+  nickname: string | null;
+  comments: {
+    id: number;
+    content: string;
+    author: string;
+    date: string;
+    postId: number;
+  }[];
+}
 
 export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [selectedBlogId, setSelectedBlogId] = useState<number | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchBlogs = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch("https://blog-platform-qqqt.vercel.app/api/posts-with-comments", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        cache: 'no-store'
+      });
+      if (!res.ok) throw new Error(`Failed to fetch blogs: ${res.status}`);
+      const data: Blog[] = await res.json();
+      setBlogs(data);
+      setError(null);
+    } catch (err) {
+      setError("Failed to load blogs. Please try again later.");
+      console.error("Error fetching blogs:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const shouldBeDark = savedTheme === 'dark' || (!savedTheme && systemPrefersDark);
-    
+    // Handle theme
+    const savedTheme = localStorage.getItem("theme");
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const shouldBeDark = savedTheme === "dark" || (!savedTheme && systemPrefersDark);
     setIsDarkMode(shouldBeDark);
-    document.documentElement.classList.toggle('dark', shouldBeDark);
+    document.documentElement.classList.toggle("dark", shouldBeDark);
+
+    // Initial fetch
+    fetchBlogs();
   }, []);
 
   const toggleTheme = () => {
     const newTheme = !isDarkMode;
     setIsDarkMode(newTheme);
-    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
-    document.documentElement.classList.toggle('dark', newTheme);
+    localStorage.setItem("theme", newTheme ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", newTheme);
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
+
     if (diffInMinutes < 5) return "added recently";
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-    
+
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return `${diffInHours}h ago`;
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays}d ago`;
   };
 
-  const filteredBlogs = mockBlogs.filter(blog => {
-    const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         blog.blog.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'ALL' || blog.category === selectedCategory;
+  const filteredBlogs = blogs.filter((blog) => {
+    const matchesSearch =
+      blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      blog.blog.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "ALL" || blog.catagory === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -125,7 +136,7 @@ export default function Home() {
                 <Search className="w-4 h-4" />
               </Button>
 
-              <FilterDropdown 
+              <FilterDropdown
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
                 isOpen={isFilterOpen}
@@ -134,7 +145,7 @@ export default function Home() {
             </div>
 
             <div className="flex gap-3 items-center">
-              <Button 
+              <Button
                 onClick={() => setIsCreateModalOpen(true)}
                 className="relative bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 font-semibold animate-bounce"
               >
@@ -143,8 +154,8 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-md blur opacity-30 -z-10"></div>
               </Button>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="icon"
                 onClick={toggleTheme}
                 className="bg-white/50 dark:bg-gray-800/50"
@@ -163,7 +174,15 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3 space-y-6">
-            {filteredBlogs.length === 0 ? (
+            {isLoading ? (
+              <Card className="p-12 text-center bg-white/50 dark:bg-gray-800/50">
+                <p className="text-gray-500 dark:text-gray-400 text-lg">Loading blogs...</p>
+              </Card>
+            ) : error ? (
+              <Card className="p-12 text-center bg-white/50 dark:bg-gray-800/50">
+                <p className="text-red-500 text-lg">{error}</p>
+              </Card>
+            ) : filteredBlogs.length === 0 ? (
               <Card className="p-12 text-center bg-white/50 dark:bg-gray-800/50">
                 <p className="text-gray-500 dark:text-gray-400 text-lg">
                   No blogs found matching your criteria.
@@ -171,8 +190,8 @@ export default function Home() {
               </Card>
             ) : (
               filteredBlogs.map((blog, index) => (
-                <Card 
-                  key={blog.id} 
+                <Card
+                  key={blog.id}
                   className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm animate-fade-in"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
@@ -180,38 +199,41 @@ export default function Home() {
                     <div className="flex flex-col md:flex-row">
                       {blog.image && (
                         <div className="md:w-1/3">
-                          <img 
-                            src={blog.image} 
+                          <img
+                            src={blog.image}
                             alt={blog.title}
                             className="w-full h-48 md:h-full object-cover"
                           />
                         </div>
                       )}
-                      <div className={`p-6 flex-1 ${!blog.image ? 'w-full' : ''}`}>
+                      <div className={`p-6 flex-1 ${!blog.image ? "w-full" : ""}`}>
                         <div className="flex items-center gap-2 mb-3">
-                          <Badge 
-                            variant="secondary" 
+                          <Badge
+                            variant="secondary"
                             className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 text-blue-800 dark:text-blue-200"
                           >
-                            {blog.category}
+                            {blog.catagory}
                           </Badge>
                           <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
                             <Clock className="w-3 h-3 mr-1" />
                             {formatDate(blog.date)}
                           </div>
                         </div>
-                        
+
                         <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white line-clamp-2">
                           {blog.title}
                         </h3>
-                        
+
                         <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
                           {blog.blog}
                         </p>
-                        
+
                         <div className="flex items-center justify-between">
-                          <Button 
-                            variant="ghost" 
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            By {blog.nickname || "user"}
+                          </p>
+                          <Button
+                            variant="ghost"
                             size="sm"
                             onClick={() => openCommentModal(blog.id)}
                             className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
@@ -258,15 +280,22 @@ export default function Home() {
         </div>
       </main>
 
-      <CreateBlogModal 
-        isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
+      <CreateBlogModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onPostCreated={fetchBlogs} // Pass the refresh function
       />
-      
-      <CommentModal 
-        isOpen={isCommentModalOpen} 
+
+      <CommentModal
+        isOpen={isCommentModalOpen}
         onClose={() => setIsCommentModalOpen(false)}
         blogId={selectedBlogId}
+        comments={
+          selectedBlogId 
+            ? blogs.find(blog => blog.id === selectedBlogId)?.comments || [] 
+            : []
+        }
+        onCommentAdded={fetchBlogs}
       />
     </div>
   );
