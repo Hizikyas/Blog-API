@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import CreateBlogModal from "@/components/CreateBlogModal";
 import CommentModal from "@/components/CommentModal";
 import FilterDropdown from "@/components/FilterDropdown";
+import Image from 'next/image'
 
 interface Blog {
   id: number;
@@ -199,7 +200,7 @@ export default function Home() {
                     <div className="flex flex-col md:flex-row">
                       {blog.image && (
                         <div className="md:w-1/3">
-                          <img
+                          <Image
                             src={blog.image}
                             alt={blog.title}
                             className="w-full h-48 md:h-full object-cover"
