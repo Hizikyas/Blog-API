@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import CreateBlogModal from "@/components/CreateBlogModal";
 import CommentModal from "@/components/CommentModal";
 import FilterDropdown from "@/components/FilterDropdown";
-import Image from 'next/image'
+
 
 interface Blog {
   id: number;
@@ -198,18 +198,15 @@ export default function Home() {
                 >
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row">
-{blog.image && (
-  <div className="md:w-1/3 relative h-48 md:h-full">
-    <Image
-      src={blog.image}
-      alt={blog.title}
-      fill
-      style={{ objectFit: 'cover' }}
-      unoptimized={true} // Add this if you still have issues
-      priority={index < 3} // Only prioritize first few images
-    />
-  </div>
-)}
+                      {blog.image && (
+                        <div className="md:w-1/3">
+                          <img
+                            src={blog.image}
+                            alt={blog.title}
+                            className="w-full h-48 md:h-full object-cover"
+                          />
+                        </div>
+                      )}
                       <div className={`p-6 flex-1 ${!blog.image ? "w-full" : ""}`}>
                         <div className="flex items-center gap-2 mb-3">
                           <Badge
