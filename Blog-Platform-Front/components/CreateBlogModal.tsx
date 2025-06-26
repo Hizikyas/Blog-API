@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import Image from 'next/image'
 
 interface CreateBlogModalProps {
   isOpen: boolean;
@@ -200,7 +201,7 @@ const CreateBlogModal: React.FC<CreateBlogModalProps> = ({ isOpen, onClose, onPo
               <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
                 {imagePreview ? (
                   <div className="space-y-4">
-                    <img 
+                    <Image
                       src={imagePreview} 
                       alt="Preview" 
                       className="max-h-48 mx-auto rounded-lg object-cover"
