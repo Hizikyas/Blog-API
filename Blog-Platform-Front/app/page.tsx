@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import CreateBlogModal from "@/components/CreateBlogModal";
 import CommentModal from "@/components/CommentModal";
 import FilterDropdown from "@/components/FilterDropdown";
-
 
 interface Blog {
   id: number;
@@ -51,7 +49,13 @@ export default function Home() {
       });
       if (!res.ok) throw new Error(`Failed to fetch blogs: ${res.status}`);
       const data: Blog[] = await res.json();
-      setBlogs(data);
+      
+      // Sort blogs by date (newest first)
+      const sortedBlogs = [...data].sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+      
+      setBlogs(sortedBlogs);
       setError(null);
     } catch (err) {
       setError("Failed to load blogs. Please try again later.");
