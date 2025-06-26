@@ -1,4 +1,4 @@
-
+"use client";
 import React, { useState, useEffect } from "react";
 import { X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,9 +31,18 @@ const CommentModal: React.FC<CommentModalProps> = ({
   comments,
   onCommentAdded
 }) => {
+  const [isNicknameSet, setIsNicknameSet] = useState(false);
+  const [authorName, setAuthorName] = useState("");
+
+  // Initialize from sessionStorage on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const nickname = sessionStorage.getItem("nickname") || "";
+      setAuthorName(nickname);
+      setIsNicknameSet(!!nickname);
+    }
+  }, []);
   const [newComment, setNewComment] = useState("");
-  const [authorName, setAuthorName] = useState(sessionStorage.getItem("nickname") || "");
-  const [isNicknameSet, setIsNicknameSet] = useState(!!sessionStorage.getItem("nickname"));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [optimisticComments, setOptimisticComments] = useState<Comment[]>(comments);

@@ -1,4 +1,5 @@
-import React, { useState, useCallback, memo } from "react";
+"use client";
+import React, { useState, useCallback, useEffect , memo } from "react";
 import { X, Upload, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,16 +21,24 @@ const MemoizedTextarea = memo(Textarea);
 const MemoizedSelect = memo(Select);
 
 const CreateBlogModal: React.FC<CreateBlogModalProps> = ({ isOpen, onClose, onPostCreated }) => {
+  const [isNicknameSet, setIsNicknameSet] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     catagory: "",
     content: "",
     image: null as File | null,
-    nickname: sessionStorage.getItem("nickname") || "",
+    nickname: "",
   });
+
+    useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const nickname = sessionStorage.getItem("nickname") || "";
+      setFormData(prev => ({ ...prev, nickname }));
+      setIsNicknameSet(!!nickname);
+    }
+  }, []);
   
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isNicknameSet] = useState(!!sessionStorage.getItem("nickname"));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
