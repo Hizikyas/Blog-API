@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Plus, Moon, Sun, MessageCircle, Clock } from "lucide-react";
+import { Search, Plus, Moon, Sun, MessageCircle, Clock, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import CreateBlogModal from "@/components/CreateBlogModal";
 import CommentModal from "@/components/CommentModal";
 import FilterDropdown from "@/components/FilterDropdown";
+import ReportModal from "@/components/ReportModal";
 
 interface Blog {
   id: number;
@@ -33,6 +34,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedBlogId, setSelectedBlogId] = useState<number | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -45,16 +47,16 @@ export default function Home() {
       const res = await fetch("https://blog-platform-qqqt.vercel.app/api/posts-with-comments", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
-        cache: 'no-store'
+        cache: "no-store",
       });
       if (!res.ok) throw new Error(`Failed to fetch blogs: ${res.status}`);
       const data: Blog[] = await res.json();
-      
+
       // Sort blogs by date (newest first)
       const sortedBlogs = [...data].sort((a, b) => {
         return new Date(b.date).getTime() - new Date(a.date).getTime();
       });
-      
+
       setBlogs(sortedBlogs);
       setError(null);
     } catch (err) {
@@ -110,6 +112,11 @@ export default function Home() {
   const openCommentModal = (blogId: number) => {
     setSelectedBlogId(blogId);
     setIsCommentModalOpen(true);
+  };
+
+  const openReportModal = (blogId: number) => {
+    setSelectedBlogId(blogId);
+    setIsReportModalOpen(true);
   };
 
   return (
@@ -237,15 +244,26 @@ export default function Home() {
                           <p className="text-sm text-gray-500 dark:text-gray-400">
                             By {blog.nickname || "user"}
                           </p>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openCommentModal(blog.id)}
-                            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                          >
-                            <MessageCircle className="w-4 h-4 mr-2" />
-                            Comments
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openCommentModal(blog.id)}
+                              className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+                            >
+                              <MessageCircle className="w-4 h-4 mr-2" />
+                              Comments
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openReportModal(blog.id)}
+                              className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                            >
+                              <Flag className="w-4 h-4 mr-2" />
+                              Report
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -288,19 +306,21 @@ export default function Home() {
       <CreateBlogModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onPostCreated={fetchBlogs} // Pass the refresh function
+        onPostCreated={fetchBlogs}
       />
 
       <CommentModal
         isOpen={isCommentModalOpen}
         onClose={() => setIsCommentModalOpen(false)}
         blogId={selectedBlogId}
-        comments={
-          selectedBlogId 
-            ? blogs.find(blog => blog.id === selectedBlogId)?.comments || [] 
-            : []
-        }
+        comments={selectedBlogId ? blogs.find(blog => blog.id === selectedBlogId)?.comments || [] : []}
         onCommentAdded={fetchBlogs}
+      />
+
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        blogId={selectedBlogId}
       />
     </div>
   );
